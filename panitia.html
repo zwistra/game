@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<link rel="icon" href="data:,">
+<title>Panel Panitia — Rakit Komputer Arena</title>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="pan">
+<div class="orbs" aria-hidden="true"><i></i><i></i></div>
+<main class="wrap wide">
+  <h1><span class="grad">Panel Panitia</span></h1>
+  <p class="muted">Tempel Kode Hasil peserta (satu per baris) untuk memverifikasi dan menyusun peringkat. Semua diproses di perangkat ini; tidak ada data dikirim ke mana pun.</p>
+  <div class="card pn">
+    <label class="fld">Kode Lomba <small class="muted">(sama dengan yang diumumkan ke peserta)</small>
+      <span class="row2"><input id="pKey" maxlength="12" autocomplete="off" placeholder="mis. K7M2QX"><button class="btn alt sm" id="bGen" type="button">🎲 Acak</button></span></label>
+    <label class="fld">Kode Hasil peserta<textarea id="pCodes" rows="7" spellcheck="false" placeholder="XXXXXX-XXXXXX-XXXXXX&#10;XXXXXX-XXXXXX-XXXXXX"></textarea></label>
+    <div class="row"><button class="btn" id="bRank" type="button">Proses Peringkat</button><button class="btn alt" id="bClr" type="button">Bersihkan</button></div>
+    <p class="err" id="pErr" role="alert"></p>
+  </div>
+  <div id="pOut" hidden>
+    <div class="podium" id="podium"></div>
+    <div class="tw"><table><thead><tr><th>#</th><th>Kode Siswa</th><th>Skor</th><th>Benar</th><th>Akurasi</th><th>Waktu (dtk)</th><th>Catatan</th></tr></thead><tbody id="pBody"></tbody></table></div>
+    <div class="row"><button class="btn" id="bCsv" type="button">⬇️ Unduh CSV</button><button class="btn alt" id="bTsv" type="button">📋 Salin Tabel</button></div>
+    <div id="pInv" class="card inv" hidden><b>Kode ditolak</b><ul id="pInvL"></ul></div>
+  </div>
+  <p class="small muted">Catatan etika: umumkan pemenang memakai Kode Siswa dan pastikan sekolah mengizinkan publikasi hasil individual. Verifikasi kode melindungi dari salah ketik dan manipulasi sederhana, tetapi bukan pengganti pengawasan langsung saat lomba.</p>
+</main>
+<script src="assets/js/engine.js"></script>
+<script src="assets/js/panitia.js"></script>
+</body>
+</html>

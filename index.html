@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#0a0614">
+<link rel="icon" href="data:,">
+<title>Rakit Komputer Arena — Pengenalan Arsitektur Komputer</title>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<div class="orbs" aria-hidden="true"><i></i><i></i></div>
+<main class="wrap">
+  <div class="stage" id="stage">
+    <header class="top"><b class="brand"><span class="grad">Rakit Komputer</span> Arena</b>
+      <span class="tools"><button class="ib" id="bMute" type="button" aria-label="Suara">🔊</button><button class="ib" id="bFs" type="button" aria-label="Layar penuh">⛶</button></span></header>
+
+    <section class="scr" id="sHome">
+      <h1>Pengenalan <span class="grad">Arsitektur Komputer</span></h1>
+      <p class="muted">Tantangan 3 ronde: rakit sistem komputer, bedakan arsitektur &amp; organisasi, lalu uji konsepmu. Cepat dan tepat = skor tinggi!</p>
+      <div class="goals"><b>Setelah bermain, kamu mampu:</b><ul><li>Menyebut komponen utama sistem komputer dan fungsinya</li><li>Membedakan arsitektur dan organisasi komputer</li><li>Menjelaskan alur Input → Proses → Output serta peran memori &amp; penyimpanan</li></ul></div>
+      <div class="row"><button class="btn" id="bComp" type="button">🏆 Mode Lomba</button><button class="btn alt" id="bPrac" type="button">📘 Mode Latihan</button></div>
+      <button class="lnk" id="bInfo" type="button">ℹ️ Cara main, aturan &amp; sumber</button>
+    </section>
+
+    <section class="scr" id="sInfo" hidden>
+      <h2>Cara main &amp; aturan</h2>
+      <ul class="rules">
+        <li><b>28 soal, 3 ronde:</b> Rakit Sistem (8) · Arsitektur atau Organisasi? (10) · Kilat Konsep (10).</li>
+        <li><b>Skor</b> tiap jawaban benar = 100 + bonus kecepatan (maks 50) + bonus beruntun (maks 50). Salah = 0.</li>
+        <li><b>Seri</b> ditentukan oleh jumlah benar lalu total waktu menjawab tercepat.</li>
+        <li><b>Mode Lomba:</b> satu kesempatan per Kode Siswa. Jangan meninggalkan halaman — soal yang sedang berjalan dianggap salah.</li>
+        <li><b>Mode Latihan:</b> bebas diulang, tidak menghasilkan kode.</li>
+        <li><b>Privasi:</b> gunakan Kode Siswa dari panitia (bukan nama lengkap). Tidak ada data dikirim ke internet.</li>
+      </ul>
+      <p class="small muted"><b>Sumber materi:</b> W. Stallings, <i>Computer Organization and Architecture</i> (definisi arsitektur vs organisasi); materi dasar sistem komputer SMA/SMK. Analogi mobil adalah ilustrasi pembelajaran.</p>
+      <button class="btn alt" id="bBack1" type="button">← Kembali</button>
+    </section>
+
+    <section class="scr" id="sSetup" hidden>
+      <h2>🏆 Mode Lomba</h2>
+      <p class="muted">Isi data berikut sesuai arahan panitia.</p>
+      <label class="fld">Kode Siswa<input id="inKode" maxlength="6" autocomplete="off" autocapitalize="characters" inputmode="text" placeholder="mis. A07"></label>
+      <label class="fld">Kode Lomba<input id="inKey" maxlength="12" autocomplete="off" autocapitalize="characters" placeholder="diberikan panitia"></label>
+      <p class="err" id="setupErr" role="alert"></p>
+      <div class="row"><button class="btn" id="bStart" type="button">Mulai Lomba</button><button class="btn alt" id="bBack2" type="button">Batal</button></div>
+    </section>
+
+    <section class="scr" id="sIntro" hidden>
+      <h2 id="inT"></h2><p class="muted big" id="inP"></p><button class="btn" id="bGo" type="button">Mulai Ronde</button>
+    </section>
+
+    <section class="scr q" id="sQuiz" hidden>
+      <div class="qhud"><span id="qR" class="pill"></span><span id="qN" class="pill"></span><span class="sp"></span><span id="qS" class="pill sc">0</span><span id="qK" class="pill"></span></div>
+      <div class="timer" aria-hidden="true"><u id="tbar"></u></div>
+      <div class="card" id="qText" aria-live="polite"></div>
+      <div class="opts" id="opts"></div>
+      <div class="fb" id="fb" hidden><b id="fbT"></b><span id="fbP" class="pts"></span><p id="fbW"></p><button class="btn" id="bNext" type="button">Lanjut ▶</button></div>
+    </section>
+
+    <section class="scr" id="sRes" hidden>
+      <h2 id="rT">Selesai!</h2>
+      <div class="big-sc"><b id="rS">0</b><small>poin</small></div>
+      <div class="stats"><div><b id="rC">0</b><small>benar</small></div><div><b id="rA">0%</b><small>akurasi</small></div><div><b id="rTm">0</b><small>detik</small></div></div>
+      <div class="codebox" id="codeBox" hidden><small class="muted">Kode Hasil — serahkan ke panitia</small><code id="rCode"></code><button class="btn alt" id="bCopy" type="button">📋 Salin Kode</button></div>
+      <p class="muted small" id="rNote"></p>
+      <h3 id="rvT" hidden>Pelajari lagi</h3><div id="rv" class="rv"></div>
+      <div class="row"><button class="btn" id="bAgain" type="button">📘 Latihan Lagi</button><button class="btn alt" id="bHome" type="button">Beranda</button></div>
+    </section>
+    <div class="toast" id="toast" aria-live="polite"></div>
+  </div>
+</main>
+<script src="assets/js/engine.js"></script>
+<script src="assets/js/game.js"></script>
+</body>
+</html>

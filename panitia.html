@@ -13,21 +13,20 @@
 <div class="orbs" aria-hidden="true"><i></i><i></i></div>
 <main class="wrap wide">
   <h1><span class="grad">Panel Panitia</span></h1>
-  <p class="muted">Tempel Kode Hasil peserta (satu per baris) untuk memverifikasi dan menyusun peringkat. Semua diproses di perangkat ini; tidak ada data dikirim ke mana pun.</p>
+  <p class="muted">Catat hasil peserta dari layar mereka (atau dari hasil yang mereka salin), satu peserta per baris, lalu proses peringkat. Semua diproses di perangkat ini; tidak ada data dikirim ke mana pun.</p>
   <div class="card pn">
-    <label class="fld">Kode Lomba <small class="muted">(sama dengan yang diumumkan ke peserta)</small>
-      <span class="row2"><input id="pKey" maxlength="12" autocomplete="off" placeholder="mis. K7M2QX"><button class="btn alt sm" id="bGen" type="button">🎲 Acak</button></span></label>
-    <label class="fld">Kode Hasil peserta<textarea id="pCodes" rows="7" spellcheck="false" placeholder="XXXXXX-XXXXXX-XXXXXX&#10;XXXXXX-XXXXXX-XXXXXX"></textarea></label>
+    <label class="fld">Hasil peserta <small class="muted">format: Nama; skor; benar; waktu — contoh: Budi Santoso; 3250; 22/28; 180</small>
+      <textarea id="pCodes" rows="8" spellcheck="false" placeholder="Budi Santoso; 3250; 22/28; 180&#10;Siti Aminah; 3900; 25/28; 210"></textarea></label>
     <div class="row"><button class="btn" id="bRank" type="button">Proses Peringkat</button><button class="btn alt" id="bClr" type="button">Bersihkan</button></div>
     <p class="err" id="pErr" role="alert"></p>
   </div>
   <div id="pOut" hidden>
     <div class="podium" id="podium"></div>
-    <div class="tw"><table><thead><tr><th>#</th><th>Kode Siswa</th><th>Skor</th><th>Benar</th><th>Akurasi</th><th>Waktu (dtk)</th><th>Catatan</th></tr></thead><tbody id="pBody"></tbody></table></div>
+    <div class="tw"><table><thead><tr><th>#</th><th>Nama</th><th>Skor</th><th>Benar</th><th>Akurasi</th><th>Waktu (dtk)</th><th>Catatan</th></tr></thead><tbody id="pBody"></tbody></table></div>
     <div class="row"><button class="btn" id="bCsv" type="button">⬇️ Unduh CSV</button><button class="btn alt" id="bTsv" type="button">📋 Salin Tabel</button></div>
-    <div id="pInv" class="card inv" hidden><b>Kode ditolak</b><ul id="pInvL"></ul></div>
+    <div id="pInv" class="card inv" hidden><b>Baris ditolak</b><ul id="pInvL"></ul></div>
   </div>
-  <p class="small muted">Catatan etika: umumkan pemenang memakai Kode Siswa dan pastikan sekolah mengizinkan publikasi hasil individual. Verifikasi kode melindungi dari salah ketik dan manipulasi sederhana, tetapi bukan pengganti pengawasan langsung saat lomba.</p>
+  <p class="small muted">Catatan: hasil yang diketik/ditempel tidak memiliki tanda keamanan, jadi cocokkan dengan layar peserta saat lomba berlangsung dan awasi langsung. Pastikan sekolah mengizinkan pengumuman hasil individual; untuk laporan tugas gunakan kode/inisial, bukan nama lengkap.</p>
 </main>
 <script src="assets/js/engine.js"></script>
 <script src="assets/js/panitia.js"></script>

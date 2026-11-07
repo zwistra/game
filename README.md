@@ -8,20 +8,21 @@ Media pembelajaran interaktif berbentuk lomba kuis 3 ronde (28 soal) untuk siswa
 Setiap jawaban disertai penjelasan singkat; akhir permainan menampilkan daftar soal yang salah untuk dipelajari ulang.
 
 ## Cara menjalankan lomba (untuk panitia/guru)
-1. Hosting (lihat panduan GitHub Pages) atau buka lewat server lokal; bagikan link `index.html` ke siswa.
-2. Buka `panitia.html` → klik **Acak** → umumkan **Kode Lomba** itu ke peserta tepat saat lomba dimulai (jangan jauh-jauh hari).
-3. Bagikan **Kode Siswa** unik (mis. A01–A30), bukan nama lengkap.
-4. Peserta: Mode Lomba → isi Kode Siswa + Kode Lomba → bermain → menyerahkan **Kode Hasil** (18 karakter) ke panitia.
-5. Panitia tempel semua Kode Hasil di `panitia.html` → **Proses Peringkat** → unduh CSV / salin tabel.
+1. Hosting (lihat panduan GitHub Pages) lalu bagikan link `index.html` ke siswa.
+2. **Kode Lomba tetap: `ARSKOM26`** (ubah di `assets/js/config.js` bila perlu, 3–12 huruf/angka). Umumkan ke peserta saat lomba dimulai.
+3. Peserta: Mode Lomba → isi **Nama** + Kode Lomba → bermain → layar hasil menampilkan nama, skor, jumlah benar, dan waktu.
+4. Panitia mencatat hasil dari layar peserta (atau peserta menekan **Salin Hasil** dan mengirimkannya ke panitia).
+5. Buka `panitia.html`, tempel/ketik satu baris per peserta dengan format `Nama; skor; benar; waktu`
+   (contoh: `Budi Santoso; 3250; 22/28; 180`) → **Proses Peringkat** → unduh CSV / salin tabel.
 Skor: 100/benar + bonus cepat (maks 50) + bonus beruntun (maks 50). Seri: jumlah benar → total waktu menjawab tercepat.
 
 ## Batasan yang jujur
-- Tanpa server, sehingga tidak ada leaderboard otomatis. Kode Hasil memakai checksum yang terikat Kode Lomba: menolak salah ketik, kode dari lomba lain, dan skor yang diedit sembarangan. Namun siswa yang membaca source code *bisa* memalsukannya — awasi lomba secara langsung (layar dilihat, satu kesempatan per kode, pindah halaman = soal dianggap salah).
-- "Satu kesempatan" ditegakkan per perangkat (localStorage); siswa yang berganti perangkat/menghapus data bisa mencoba lagi. Panel panitia menandai siswa dengan >1 kode.
-- Media ini adalah **aktivitas/simulasi** dalam pembelajaran. Pre-test dan post-test sesuai panduan tugas tetap dibuat terpisah (kisi-kisi indikator setara).
-- Etika: umumkan pemenang dengan Kode Siswa; minta izin sekolah sebelum mempublikasikan hasil/foto siswa.
+- Tanpa server, sehingga tidak ada leaderboard otomatis dan hasil **tidak memiliki tanda keamanan**: peserta bisa mengubah angka saat menyalin/mengetik, dan Kode Lomba tetap dapat dibaca dari source code. Karena itu cocokkan dengan layar peserta di tempat dan awasi lomba langsung. Panel panitia hanya menolak baris yang formatnya salah atau skornya tidak sesuai jumlah benar.
+- "Satu kesempatan per nama" hanya berlaku per perangkat (localStorage); peserta yang berganti perangkat/menghapus data bisa mencoba lagi. Meninggalkan halaman saat lomba membuat soal yang sedang berjalan dianggap salah.
+- Media ini adalah **aktivitas/simulasi** dalam pembelajaran. Pre-test dan post-test sesuai panduan tugas dibuat terpisah (kisi-kisi indikator setara).
+- Etika: nama siswa hanya ada di layar/perangkat peserta dan panel panitia. Untuk laporan tugas gunakan kode/inisial, bukan nama lengkap; minta izin sekolah sebelum mengumumkan atau memublikasikan hasil individual.
 - Periksa ulang format sitasi sumber (Stallings, *Computer Organization and Architecture*, edisi yang kalian pakai) di Daftar Pustaka laporan.
 
 ## Teknis
-HTML/CSS/JS murni; CSP ketat, tanpa `innerHTML`/`eval`/jaringan. Uji otomatis: `node tests/test.js` (soal, skor, fuzz, kode, peringkat) dan `node tests/smoke.js` (alur UI).
+HTML/CSS/JS murni; CSP ketat, tanpa `innerHTML`/`eval`/jaringan. Uji otomatis: `node tests/test.js` (soal, skor, fuzz, nama, parser hasil, peringkat) dan `node tests/smoke.js` (alur UI).
 Fitur HP: layar penuh (⛶), layar tetap menyala, getar saat salah, tombol besar. Layar penuh tidak tersedia di iPhone Safari.

@@ -64,3 +64,5 @@ tr.top1{background:rgba(251,191,36,.14)}tr.top2{background:rgba(203,213,225,.1)}
 .stage:fullscreen>*,.stage:-webkit-full-screen>*{width:min(720px,100%)}
 @media(max-width:420px){.opts.g2{grid-template-columns:1fr}.stage{padding-left:12px;padding-right:12px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+#inNama{text-transform:none;letter-spacing:0}.codebox b{font-size:1.15rem}.codebox code{font-size:clamp(.95rem,4.4vw,1.2rem)!important;letter-spacing:.02em!important}

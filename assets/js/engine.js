@@ -86,50 +86,37 @@
     return g;
   }
 
-  /* ---------- kode hasil lomba ---------- */
-  const SALT = 'CIL26';
-  const h32 = s => { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return h >>> 0; };
-  const normKode = s => { const k = String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); return k.length >= 2 && k.length <= 6 ? k : null; };
-  const normKey = s => { const k = String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); return k.length >= 3 && k.length <= 12 ? k : null; };
+  /* ---------- nama peserta, hasil, dan peringkat ---------- */
+  const normName = s => { const n = String(s || '').normalize('NFKC').replace(/[^\p{L}\p{N} .'\-]/gu, '').replace(/\s+/g, ' ').trim().slice(0, 30); return n.length >= 2 ? n : null; };
+  const normKey = s => String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  const keyOk = (input, expected) => { const b = normKey(expected); return !!b && normKey(input) === b; };
   const TOTAL = 28, MAXSECS = 8 * LIMITS[1] + 10 * LIMITS[2] + 10 * LIMITS[3];
-  const chk = (key, payload) => h32(SALT + key + '|' + payload.toString()) & 0xFFFFF;
-  function makeCode(key, kode, res) {
-    key = normKey(key); kode = normKode(kode);
-    if (!key || !kode || !res) return null;
-    const { correct, secs, score } = res;
-    if (![correct, secs, score].every(Number.isInteger) || correct < 0 || correct > TOTAL || secs < 0 || secs > 511 || score < 0 || score > 8191) return null;
-    let p = 1n; p = (p << 3n) | BigInt(kode.length); p = (p << 31n) | BigInt(parseInt(kode, 36)); p = (p << 5n) | BigInt(correct); p = (p << 9n) | BigInt(secs); p = (p << 13n) | BigInt(score);
-    const s = ((p << 20n) | BigInt(chk(key, p))).toString(36).toUpperCase().padStart(18, '0');
-    return s.slice(0, 6) + '-' + s.slice(6, 12) + '-' + s.slice(12);
+  const formatResult = (name, res) => [name, res.score, res.correct + '/' + TOTAL, res.secs].join('; ');
+  function parseLine(line) {
+    const parts = String(line || '').split(/[;|\t]/).map(x => x.trim());
+    if (parts.length !== 4) return { ok: false, reason: 'Format harus: Nama; skor; benar; waktu' };
+    const name = normName(parts[0]); if (!name) return { ok: false, reason: 'Nama tidak valid' };
+    const m = /^(\d{1,2})(?:\s*\/\s*28)?$/.exec(parts[2]), score = /^\d{1,5}$/.test(parts[1]) ? Number(parts[1]) : NaN, secs = /^\d{1,3}$/.test(parts[3].replace(/\s*(dtk|detik|s)$/i, '')) ? Number(parts[3].replace(/\s*(dtk|detik|s)$/i, '')) : NaN;
+    const correct = m ? Number(m[1]) : NaN;
+    if (!Number.isInteger(score) || score > 8191) return { ok: false, reason: 'Skor tidak valid' };
+    if (!Number.isInteger(correct) || correct > TOTAL) return { ok: false, reason: 'Jumlah benar harus 0–28' };
+    if (!Number.isInteger(secs) || secs > MAXSECS) return { ok: false, reason: 'Waktu harus 0–' + MAXSECS + ' detik' };
+    if (score < correct * 100 || score > correct * 200 || (correct === 0 && score !== 0)) return { ok: false, reason: 'Skor tidak sesuai jumlah benar (periksa salah ketik)' };
+    return { ok: true, name, score, correct, secs, acc: Math.round(correct / TOTAL * 100) };
   }
-  function parseCode(key, text) {
-    key = normKey(key); if (!key) return { ok: false, reason: 'Kode lomba tidak valid' };
-    const s = String(text || '').toUpperCase().replace(/[^0-9A-Z]/g, '');
-    if (s.length !== 18) return { ok: false, reason: 'Panjang kode salah' };
-    let v = 0n; for (const ch of s) v = v * 36n + BigInt(parseInt(ch, 36));
-    if (v >> 83n) return { ok: false, reason: 'Kode tidak valid' };
-    const c = Number(v & 0xFFFFFn), p = v >> 20n;
-    if (c !== chk(key, p)) return { ok: false, reason: 'Checksum salah (kode lomba berbeda / kode salah ketik / dimanipulasi)' };
-    const score = Number(p & 0x1FFFn), secs = Number((p >> 13n) & 0x1FFn), correct = Number((p >> 22n) & 0x1Fn), kv = Number((p >> 27n) & 0x7FFFFFFFn), len = Number((p >> 58n) & 7n), ver = Number(p >> 61n);
-    if (ver !== 1 || len < 2 || len > 6) return { ok: false, reason: 'Versi/format tidak dikenal' };
-    const kode = kv.toString(36).toUpperCase().padStart(len, '0');
-    if (correct > TOTAL || secs > MAXSECS || score < correct * 100 || score > correct * 200 || (correct === 0 && score !== 0)) return { ok: false, reason: 'Data tidak masuk akal (indikasi manipulasi)' };
-    return { ok: true, kode, correct, secs, score, acc: Math.round(correct / TOTAL * 100) };
-  }
-  const better = (a, b) => b.score - a.score || b.correct - a.correct || a.secs - b.secs || (a.kode < b.kode ? -1 : 1);
-  function rankCodes(key, text) {
-    const parts = String(text || '').split(/[\s,;]+/).filter(Boolean), best = new Map(), invalid = [], seen = new Set(); let dup = 0;
-    parts.forEach(p => {
-      const r = parseCode(key, p); if (!r.ok) { invalid.push({ code: p, reason: r.reason }); return; }
-      const id = p.toUpperCase().replace(/[^0-9A-Z]/g, ''); if (seen.has(id)) { dup++; return; } seen.add(id);
-      const cur = best.get(r.kode); if (!cur) { r.tries = 1; best.set(r.kode, r); } else { const n = cur.tries + 1; if (better(cur, r) > 0) { r.tries = n; best.set(r.kode, r); } else cur.tries = n; }
+  const better = (a, b) => b.score - a.score || b.correct - a.correct || a.secs - b.secs || a.name.localeCompare(b.name, 'id');
+  function rankLines(text) {
+    const best = new Map(), invalid = [];
+    String(text || '').split(/\r?\n/).map(l => l.trim()).filter(Boolean).forEach(l => {
+      const r = parseLine(l); if (!r.ok) { invalid.push({ line: l, reason: r.reason }); return; }
+      const id = r.name.toLowerCase(), cur = best.get(id);
+      if (!cur) { r.tries = 1; best.set(id, r); } else { const n = cur.tries + 1; if (better(cur, r) > 0) { r.tries = n; best.set(id, r); } else cur.tries = n; }
     });
     const rows = [...best.values()].sort(better); let rank = 0;
     rows.forEach((r, i) => { const q = rows[i - 1]; if (!i || q.score !== r.score || q.correct !== r.correct || q.secs !== r.secs) rank = i + 1; r.rank = rank; });
-    return { rows, invalid, duplicates: dup };
+    return { rows, invalid };
   }
-  const randomKey = () => { const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s = ''; const c = (typeof crypto !== 'undefined' && crypto.getRandomValues) ? crypto.getRandomValues(new Uint8Array(6)) : Array.from({ length: 6 }, () => Math.floor(Math.random() * 256)); for (const b of c) s += A[b % A.length]; return s; };
 
-  const api = { createGame, buildQuiz, makeCode, parseCode, rankCodes, normKode, normKey, randomKey, INTRO, TOTAL, MAXSECS, LIMITS, CATS1, CATS2, POOL1, POOL2, Q3 };
+  const api = { createGame, buildQuiz, normName, normKey, keyOk, formatResult, parseLine, rankLines, INTRO, TOTAL, MAXSECS, LIMITS, CATS1, CATS2, POOL1, POOL2, Q3 };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.ArenaEngine = api;
 })(typeof self !== 'undefined' ? self : this);

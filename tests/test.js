@@ -23,23 +23,20 @@ for (let r = 0; r < 100; r++) { seed = r * 7 + 1; const g = E.createGame(rng); l
   while (!g.over && n++ < 5000) { const a = rng(); if (a < 0.4) g.answer([NaN, -1, 99, 1.5, '2', null, undefined, rng() * 4 | 0][rng() * 8 | 0]); else if (a < 0.6) g.tick([NaN, -1, 0, 0.05, 9][rng() * 5 | 0]); else if (a < 0.8) g.next(); else if (a < 0.85) g.forfeit();
     assert(g.score >= 0 && g.timeLeft >= 0 && g.timeLeft <= 15 && g.i <= 28 && g.correct <= g.i + 1 && g.secs <= E.MAXSECS + 1e-6, 'invarian'); }
   if (g.over) assert(g.result().correct <= 28); }
-// 4) kode hasil: bolak-balik, manipulasi, kunci salah
-let tampered = 0, trials = 0;
-for (let r = 0; r < 300; r++) { seed = r * 31 + 5; const g = run(E.createGame(rng), (g, it) => { if (rng() < 0.6) g.answer(it.ans); else g.tick(rng() * 9 + 0.5); for (let k = 0; k < 400 && g.phase === 'q'; k++) g.tick(0.1); });
-  const res = g.result(), kode = ['A01', '07', 'Z9', 'AB12CD', '0A1', 'X9'][r % 6], code = E.makeCode('LOMBA7', kode, res); assert(/^[0-9A-Z]{6}-[0-9A-Z]{6}-[0-9A-Z]{6}$/.test(code), 'format');
-  const p = E.parseCode('lomba7', code.toLowerCase()); assert(p.ok && p.kode === kode && p.score === res.score && p.correct === res.correct && p.secs === res.secs, 'roundtrip ' + JSON.stringify(p));
-  assert(!E.parseCode('LOMBA8', code).ok, 'kunci lomba salah harus ditolak');
-  for (let t = 0; t < 12; t++) { const i = [0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17, 18, 19][rng() * 18 | 0], ch = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'[rng() * 36 | 0]; if (code[i] === ch) continue; trials++; if (E.parseCode('LOMBA7', code.slice(0, i) + ch + code.slice(i + 1)).ok) tampered++; } }
-assert(tampered <= 3, 'manipulasi 1 karakter lolos terlalu sering: ' + tampered + '/' + trials);
-assert(E.makeCode('LOMBA7', 'A', { correct: 1, secs: 1, score: 100 }) === null && E.makeCode('AB', 'A01', { correct: 1, secs: 1, score: 100 }) === null && E.makeCode('LOMBA7', 'A01', { correct: 29, secs: 1, score: 100 }) === null, 'validasi input makeCode');
-// skor palsu (tinggi, tak masuk akal) walau checksum benar karena kunci diketahui → ditolak oleh cek kewajaran
-assert(!E.parseCode('K123', E.makeCode('K123', 'A01', { correct: 3, secs: 20, score: 900 })).ok, 'skor > 200/soal harus ditolak');
-assert(!E.parseCode('K123', E.makeCode('K123', 'A01', { correct: 0, secs: 20, score: 50 })).ok && !E.parseCode('K123', E.makeCode('K123', 'A01', { correct: 5, secs: 500, score: 600 })).ok, 'cek kewajaran');
-// 5) peringkat: urutan, tie-break, duplikat, kode rusak
-{ const mk = (k, c, s, t) => E.makeCode('KUNCI1', k, { correct: c, score: s, secs: t });
-  const codes = [mk('A01', 20, 3000, 200), mk('A02', 20, 3000, 150), mk('A03', 28, 5000, 300), mk('A04', 10, 1500, 100), mk('A01', 25, 4000, 250), mk('A05', 10, 1500, 100)];
-  const txt = codes.join('\n') + '\n' + codes[0] + '\nXXXX-YYYY-ZZZZ\n' + E.makeCode('LAIN99', 'A09', { correct: 1, score: 100, secs: 5 });
-  const r = E.rankCodes('KUNCI1', txt); assert(r.rows.map(x => x.kode).join() === 'A03,A01,A02,A04,A05', 'urutan: ' + r.rows.map(x => x.kode)); assert(r.rows[1].tries === 2 && r.rows[1].score === 4000, 'ambil terbaik & hitung percobaan');
-  assert(r.rows.map(x => x.rank).join() === '1,2,3,4,4' && r.invalid.length === 2 && r.duplicates === 1, 'peringkat seri, kode invalid, duplikat: ' + JSON.stringify([r.rows.map(x => x.rank), r.invalid.length, r.duplicates])); }
-assert(E.randomKey().length === 6 && E.normKey(E.randomKey()));
-console.log('OK — komposisi soal, skor, timeout, fuzz, kode hasil (' + tampered + '/' + trials + ' manipulasi lolos), peringkat & tie-break');
+// 4) nama, kode lomba tetap, format hasil & parser
+assert(E.normName('  Budi   Santoso ') === 'Budi Santoso' && E.normName('Siti Nur-Aini') === 'Siti Nur-Aini' && E.normName("D'Angelo Jr.") === "D'Angelo Jr." && E.normName('A') === null && E.normName('   ') === null && E.normName(null) === null);
+assert(E.normName('<b>Eko</b>;=cmd') === 'bEkobcmd' && !/[<>;=]/.test(E.normName('x<script>;=1</script>y')) && E.normName('a'.repeat(80)).length === 30 && E.normName('Ünal Çelik') === 'Ünal Çelik', 'sanitasi nama');
+assert(E.keyOk('arskom26', 'ARSKOM26') && E.keyOk(' ARS-KOM 26 ', 'ARSKOM26') && !E.keyOk('ARSKOM27', 'ARSKOM26') && !E.keyOk('', 'ARSKOM26') && !E.keyOk('x', '') && !E.keyOk(undefined, 'ARSKOM26'), 'kode lomba tetap');
+{ const f = E.formatResult('Budi Santoso', { score: 3250, correct: 22, secs: 180 }); assert(f === 'Budi Santoso; 3250; 22/28; 180'); const p = E.parseLine(f); assert(p.ok && p.name === 'Budi Santoso' && p.score === 3250 && p.correct === 22 && p.secs === 180 && p.acc === 79, 'roundtrip hasil');
+  assert(E.parseLine('Ani | 3000 | 20 | 150 dtk').ok && E.parseLine('Ani\t3000\t20/28\t150').ok, 'pemisah & satuan');
+  ['Ani; 3000; 20', 'Ani; abc; 20; 100', 'A; 3000; 20; 100', 'Ani; 3000; 29; 100', 'Ani; 3000; 20; 9999', 'Ani; 9000; 20; 100', 'Ani; 100; 20; 100', 'Ani; 50; 0; 100', 'Ani; 3000; 20; -5', 'Ani; 3000; 20.5; 100', ''].forEach(l => assert(!E.parseLine(l).ok, 'harus ditolak: ' + l)); }
+// hasil dari permainan nyata selalu lolos parser
+for (let r = 0; r < 200; r++) { seed = r * 11 + 3; const g = run(E.createGame(rng), (g, it) => { if (rng() < 0.6) g.answer(it.ans); else g.tick(rng() * 9 + 0.5); for (let k = 0; k < 400 && g.phase === 'q'; k++) g.tick(0.1); });
+  const res = g.result(), p = E.parseLine(E.formatResult('Peserta ' + r, res)); assert(p.ok && p.score === res.score && p.correct === res.correct && p.secs === res.secs, 'hasil game tidak lolos parser: ' + JSON.stringify(res)); }
+// 5) peringkat: urutan, tie-break, entri ganda, baris rusak
+{ const txt = ['Ani; 3000; 20/28; 200', 'Budi; 3000; 20/28; 150', 'Citra; 5000; 28/28; 300', 'Dedi; 1500; 10/28; 100', 'ani; 4000; 25/28; 250', 'Eko; 1500; 10/28; 100', 'rusak', 'Fani; 100; 20; 5'].join('\n');
+  const r = E.rankLines(txt);
+  assert(r.rows.map(x => x.name).join() === 'Citra,ani,Budi,Dedi,Eko', 'urutan: ' + r.rows.map(x => x.name)); assert(r.rows[1].tries === 2 && r.rows[1].score === 4000, 'nama sama (tanpa beda huruf besar) → ambil terbaik');
+  assert(r.rows.map(x => x.rank).join() === '1,2,3,4,4' && r.invalid.length === 2, 'peringkat seri & baris ditolak: ' + JSON.stringify([r.rows.map(x => x.rank), r.invalid])); }
+assert(E.rankLines('').rows.length === 0 && E.rankLines(null).rows.length === 0);
+console.log('OK — komposisi soal, skor, timeout, fuzz, nama & kode lomba tetap, parser hasil, peringkat & tie-break');

@@ -31,9 +31,9 @@
         <li><b>28 soal, 3 ronde:</b> Rakit Sistem (8) · Arsitektur atau Organisasi? (10) · Kilat Konsep (10).</li>
         <li><b>Skor</b> tiap jawaban benar = 100 + bonus kecepatan (maks 50) + bonus beruntun (maks 50). Salah = 0.</li>
         <li><b>Seri</b> ditentukan oleh jumlah benar lalu total waktu menjawab tercepat.</li>
-        <li><b>Mode Lomba:</b> satu kesempatan per Kode Siswa. Jangan meninggalkan halaman — soal yang sedang berjalan dianggap salah.</li>
+        <li><b>Mode Lomba:</b> satu kesempatan per nama (di perangkat ini). Jangan meninggalkan halaman — soal yang sedang berjalan dianggap salah. Setelah selesai, tunjukkan layar hasil ke panitia.</li>
         <li><b>Mode Latihan:</b> bebas diulang, tidak menghasilkan kode.</li>
-        <li><b>Privasi:</b> gunakan Kode Siswa dari panitia (bukan nama lengkap). Tidak ada data dikirim ke internet.</li>
+        <li><b>Privasi:</b> tidak ada data yang dikirim ke internet. Nama hanya tampil di layar hasilmu.</li>
       </ul>
       <p class="small muted"><b>Sumber materi:</b> W. Stallings, <i>Computer Organization and Architecture</i> (definisi arsitektur vs organisasi); materi dasar sistem komputer SMA/SMK. Analogi mobil adalah ilustrasi pembelajaran.</p>
       <button class="btn alt" id="bBack1" type="button">← Kembali</button>
@@ -42,8 +42,8 @@
     <section class="scr" id="sSetup" hidden>
       <h2>🏆 Mode Lomba</h2>
       <p class="muted">Isi data berikut sesuai arahan panitia.</p>
-      <label class="fld">Kode Siswa<input id="inKode" maxlength="6" autocomplete="off" autocapitalize="characters" inputmode="text" placeholder="mis. A07"></label>
-      <label class="fld">Kode Lomba<input id="inKey" maxlength="12" autocomplete="off" autocapitalize="characters" placeholder="diberikan panitia"></label>
+      <label class="fld">Nama<input id="inNama" maxlength="30" autocomplete="off" autocapitalize="words" placeholder="nama kamu"></label>
+      <label class="fld">Kode Lomba<input id="inKey" maxlength="12" autocomplete="off" autocapitalize="characters" placeholder="diumumkan panitia"></label>
       <p class="err" id="setupErr" role="alert"></p>
       <div class="row"><button class="btn" id="bStart" type="button">Mulai Lomba</button><button class="btn alt" id="bBack2" type="button">Batal</button></div>
     </section>
@@ -64,7 +64,7 @@
       <h2 id="rT">Selesai!</h2>
       <div class="big-sc"><b id="rS">0</b><small>poin</small></div>
       <div class="stats"><div><b id="rC">0</b><small>benar</small></div><div><b id="rA">0%</b><small>akurasi</small></div><div><b id="rTm">0</b><small>detik</small></div></div>
-      <div class="codebox" id="codeBox" hidden><small class="muted">Kode Hasil — serahkan ke panitia</small><code id="rCode"></code><button class="btn alt" id="bCopy" type="button">📋 Salin Kode</button></div>
+      <div class="codebox" id="codeBox" hidden><small class="muted">Hasil lomba — tunjukkan layar ini ke panitia</small><b id="rName"></b><code id="rCode"></code><button class="btn alt" id="bCopy" type="button">📋 Salin Hasil</button></div>
       <p class="muted small" id="rNote"></p>
       <h3 id="rvT" hidden>Pelajari lagi</h3><div id="rv" class="rv"></div>
       <div class="row"><button class="btn" id="bAgain" type="button">📘 Latihan Lagi</button><button class="btn alt" id="bHome" type="button">Beranda</button></div>
@@ -73,6 +73,7 @@
   </div>
 </main>
 <script src="assets/js/engine.js"></script>
+<script src="assets/js/config.js"></script>
 <script src="assets/js/game.js"></script>
 </body>
 </html>

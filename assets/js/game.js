@@ -5,7 +5,7 @@
   const $ = id => document.getElementById(id), stage = $('stage');
   const SCR = ['sHome', 'sInfo', 'sSetup', 'sIntro', 'sQuiz', 'sRes'];
   const ICONS = { 1: ['📥', '⚙️', '🗃️', '📤'], 2: ['🏛️', '🔧'] };
-  let g = null, mode = 'prac', kode = '', key = '', screen = 'sHome', muted = false, ac = null, wake = null, toastTO = 0, last = 0, tickSec = -1;
+  let g = null, mode = 'prac', pname = '', screen = 'sHome', muted = false, ac = null, wake = null, toastTO = 0, last = 0, tickSec = -1;
 
   const show = id => { screen = id; SCR.forEach(s => { $(s).hidden = s !== id; }); window.scrollTo(0, 0); };
   const toast = m => { const t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toastTO); toastTO = setTimeout(() => t.classList.remove('show'), 2600); };
@@ -32,14 +32,15 @@
   $('bComp').addEventListener('click', () => { $('setupErr').textContent = ''; show('sSetup'); $('inKode').focus({ preventScroll: true }); });
   $('bPrac').addEventListener('click', () => begin('prac'));
   $('bInfo').addEventListener('click', () => show('sInfo')); $('bBack1').addEventListener('click', () => show('sHome')); $('bBack2').addEventListener('click', () => show('sHome')); $('bHome').addEventListener('click', () => show('sHome'));
-  ['inKode', 'inKey'].forEach(id => $(id).addEventListener('input', e => { e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); }));
+  $('inKey').addEventListener('input', e => { e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); });
+  const CFG = window.ARENA_CONFIG || {}, SK = n => 'cil.' + E.normKey(CFG.KODE_LOMBA) + '.' + n.toLowerCase();
+  const loadSaved = n => { try { const o = JSON.parse(store.get(SK(n)) || 'null'); return o && [o.score, o.correct, o.secs].every(Number.isInteger) && o.score >= 0 && o.score <= 8191 && o.correct >= 0 && o.correct <= E.TOTAL && o.secs >= 0 && o.secs <= E.MAXSECS ? o : null; } catch { return null; } };
   $('bStart').addEventListener('click', () => {
-    const k = E.normKode($('inKode').value), c = E.normKey($('inKey').value), err = $('setupErr');
-    if (!k) { err.textContent = 'Kode Siswa harus 2–6 huruf/angka (tanpa nama lengkap).'; return; }
-    if (!c) { err.textContent = 'Kode Lomba harus 3–12 huruf/angka (tanyakan ke panitia).'; return; }
-    kode = k; key = c; err.textContent = '';
-    const old = store.get('cil.' + key + '.' + kode), p = old && E.parseCode(key, old);
-    if (p && p.ok) { showResult({ score: p.score, correct: p.correct, total: E.TOTAL, secs: p.secs }, old, null, true); return; }
+    const n = E.normName($('inNama').value), err = $('setupErr');
+    if (!n) { err.textContent = 'Isi nama (minimal 2 huruf).'; return; }
+    if (!E.keyOk($('inKey').value, CFG.KODE_LOMBA)) { err.textContent = 'Kode Lomba salah. Tanyakan ke panitia.'; return; }
+    pname = n; err.textContent = '';
+    const old = loadSaved(n); if (old) { showResult({ score: old.score, correct: old.correct, total: E.TOTAL, secs: old.secs }, n, null, true); return; }
     begin('comp');
   });
   $('bAgain').addEventListener('click', () => begin('prac'));
@@ -77,23 +78,23 @@
   $('bNext').addEventListener('click', () => { if (g && g.next()) { handle(); if (!g.over && screen === 'sQuiz') renderQ(); } });
 
   const finish = () => {
-    const res = g.result(); let code = null;
-    if (mode === 'comp') { code = E.makeCode(key, kode, res); if (code) store.set('cil.' + key + '.' + kode, code); }
-    showResult(res, code, g.answers.filter(a => !a.ok).map(a => g.items[a.i]), false); beep(784, 0.4, 'sine', 0.06, 1175);
+    const res = g.result();
+    if (mode === 'comp') store.set(SK(pname), JSON.stringify({ score: res.score, correct: res.correct, secs: res.secs }));
+    showResult(res, mode === 'comp' ? pname : null, g.answers.filter(a => !a.ok).map(a => g.items[a.i]), false); beep(784, 0.4, 'sine', 0.06, 1175);
   };
-  const showResult = (res, code, wrong, again) => {
+  const showResult = (res, name, wrong, again) => {
     const acc = Math.round(res.correct / res.total * 100);
     $('rT').textContent = again ? 'Kamu sudah bermain 🔒' : res.correct === res.total ? '🏆 Sempurna!' : acc >= 70 ? '🎉 Bagus sekali!' : '💪 Terus berlatih!';
     $('rS').textContent = String(res.score); $('rC').textContent = res.correct + '/' + res.total; $('rA').textContent = acc + '%'; $('rTm').textContent = String(res.secs);
-    $('codeBox').hidden = !code; $('rCode').textContent = code || '';
-    $('rNote').textContent = code ? (again ? 'Satu Kode Siswa hanya satu kesempatan. Ini kode hasilmu — serahkan ke panitia.' : 'Serahkan Kode Hasil ini kepada panitia. Jangan tutup halaman sebelum kode dicatat.') : 'Mode Latihan tidak menghasilkan kode. Coba Mode Lomba saat panitia siap!';
+    $('codeBox').hidden = !name; $('rName').textContent = name || ''; $('rCode').textContent = name ? E.formatResult(name, res) : '';
+    $('rNote').textContent = name ? (again ? 'Satu nama hanya satu kesempatan lomba di perangkat ini. Ini hasilmu — tunjukkan ke panitia.' : 'Tunjukkan layar ini kepada panitia dan jangan tutup halaman sebelum hasilmu dicatat.') : 'Mode Latihan tidak dicatat sebagai hasil lomba. Coba Mode Lomba saat panitia siap!';
     const rv = $('rv'); rv.textContent = ''; (wrong || []).forEach(it => { const d = document.createElement('div'); const q = document.createElement('div'); q.textContent = it.text; const a = document.createElement('b'); a.textContent = 'Jawaban: ' + it.opts[it.ans]; const w = document.createElement('div'); w.className = 'muted small'; w.textContent = it.why; d.append(q, a, w); rv.append(d); });
     $('rvT').hidden = !rv.children.length; show('sRes');
   };
   $('bCopy').addEventListener('click', async () => {
     const c = $('rCode').textContent;
-    try { await navigator.clipboard.writeText(c); toast('Kode disalin ✔'); }
-    catch { try { const r = document.createRange(); r.selectNodeContents($('rCode')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); toast('Kode terpilih — salin manual'); } catch { toast('Catat kode secara manual'); } }
+    try { await navigator.clipboard.writeText(c); toast('Hasil disalin ✔'); }
+    catch { try { const r = document.createRange(); r.selectNodeContents($('rCode')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); toast('Hasil terpilih — salin manual'); } catch { toast('Catat hasil secara manual'); } }
   });
 
   /* keyboard & aturan lomba */
